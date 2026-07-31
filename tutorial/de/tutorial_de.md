@@ -109,11 +109,17 @@ Unterschiedlich von Gerät zu Gerät, aber normalerweise:
 - Beim Hochfahren direkt nach dem Drücken der Anschalttaste meistens "entfernen/ENTF" gedrückt halten/wiederholt drücken
 - Beim Auswahlbildschirm die ausgewählte Option mit Enter-Taste bestätigen
 
+Der Auswahlbildschirm sieht so aus. Der oberste Eintrag ist der richtige, du kannst auch einfach warten.
+
+![Das Bootmenü der Arch-Installations-ISO](../img/01-bootmenue.png)
+
 ***
 
 ### 4. Die Installation selbst
 
 Du bist jetzt im Livesystem und siehst eine schwarze Konsole. Keine Panik, das ist der unbequemste Moment der ganzen Installation und er dauert etwa zehn Minuten.
+
+![Die Konsole des Livesystems](../img/02-livesystem.png)
 
 <details>
 <summary><strong>Erstmal Tastatur und Internet</strong></summary>
@@ -137,38 +143,108 @@ Du bist jetzt im Livesystem und siehst eine schwarze Konsole. Keine Panik, das i
 
 </details>
 
-<details>
-<summary><strong>archinstall starten</strong></summary>
+#### archinstall starten
 
-> ```bash
-> archinstall
-> ```
+```bash
+archinstall
+```
+
+Das ist der offizielle Installer. Du klickst dich mit den Pfeiltasten durch ein Menü, Enter wählt aus, Esc geht zurück.
+
+![Das Hauptmenü von archinstall](../img/03-archinstall-hauptmenue.png)
+
+Von den vielen Punkten sind nur diese sieben wichtig, den Rest kannst du so lassen, wie er ist:
+
+| Menüpunkt                       | Was du willst                                                        |
+| ------------------------------- | -------------------------------------------------------------------- |
+| Disk configuration              | Deine Platte, Dateisystem `ext4` (siehe Warnung unten)               |
+| Bootloader                      | `Refind` (siehe unten, warum)                                        |
+| Profile → Type                  | `Desktop` und darin `KDE Plasma`, dann `plasma-meta`                 |
+| Profile → Graphics driver       | Deine Grafikkarte, im Zweifel `All open-source`                      |
+| Profile → Greeter               | `sddm`                                                                |
+| Applications → Audio            | `pipewire` (steht sonst auf "No audio server", also kein Ton)        |
+| Authentication → User account   | Benutzer anlegen und die Frage nach Superuser mit `Yes` beantworten  |
+| Network configuration           | `Use Network Manager (default backend)`                              |
+
+<details>
+<summary><strong>Platte und Dateisystem</strong></summary>
+
+> Unter "Disk configuration" wählst du "Partitioning" und dort "Use a best-effort default partition layout". Danach markierst du mit der Leertaste deine Platte und bestätigst mit Enter.
 >
-> Das ist der offizielle Installer, du klickst dich mit den Pfeiltasten durch ein Menü. Die Punkte, auf die es ankommt:
+> ![Die drei Partitionierungs-Methoden](../img/04-partitionierung.png)
 >
-> | Menüpunkt              | Was du willst                                                    |
-> | ---------------------- | ---------------------------------------------------------------- |
-> | Disk configuration     | Die Platte, auf die Arch soll (siehe Warnung unten)              |
-> | Bootloader             | `grub`, damit der erste Start sicher klappt. In [Kapitel 5](#5-der-erste-start) kommt danach rEFInd drauf |
-> | Profile                | `Desktop` und darin `KDE Plasma`                                  |
-> | Audio                  | `pipewire`                                                        |
-> | Network configuration  | `Use NetworkManager`                                              |
-> | Additional packages    | `git base-devel pacman-contrib`                                   |
-> | User account           | Benutzer anlegen und als Superuser markieren, sonst kein `sudo`  |
+> Beim Dateisystem hast du die Wahl zwischen `btrfs`, `ext4`, `xfs` und `f2fs`. Nimm `ext4`, das ist das langweiligste und genau deshalb richtig. `btrfs` kann Schnappschüsse, das ist schön, will aber verstanden werden.
 >
-> Danach "Install" und warten. Der Rest läuft von allein.
+> Danach zeigt dir archinstall, was es vorhat: eine kleine `fat32`-Partition für `/boot` und der Rest als `ext4` für `/`. Achte auf die Zeile `Wipe: True`.
+>
+> ![Das fertige Partitionslayout mit Wipe: True](../img/05-partitionslayout.png)
 
 </details>
 
-> **Achtung bei der Plattenauswahl:** Der Punkt "Use a best-effort default partition layout" löscht die ausgewählte Platte komplett. Wenn auf dem Rechner noch Windows liegt und bleiben soll, darfst du das auf keinen Fall nehmen. Dann brauchst du manuelle Partitionierung und freien, nicht zugewiesenen Speicher. Mehr dazu unten bei [Dualboot](#6-dualboot-mit-windows).
+<details>
+<summary><strong>Bootloader: nimm Refind</strong></summary>
 
-Am Ende fragt archinstall, ob du noch ins neue System willst ("chroot"). Kannst du mit Nein beantworten. Stick rausziehen, neu starten, fertig.
+> Der Installer stellt fünf zur Auswahl. Voreingestellt ist `Systemd-boot`, wir nehmen `Refind`.
+>
+> ![Die Bootloader-Auswahl mit Refind](../img/06-bootloader-refind.png)
+>
+> Warum: rEFInd sucht bei jedem Start selbst nach startbaren Systemen. Neue Kernel, ein zusätzlicher `linux-lts`, das Fallback-Image und auch ein vorhandenes Windows tauchen von allein im Menü auf. Du musst nie eine Konfiguration neu bauen, so wie du es bei GRUB nach jedem Kernel-Update mit `grub-mkconfig` machen müsstest.
+>
+> Mehr dazu in [Kapitel 5](#5-der-erste-start), auch wie du es hübsch machst.
+
+</details>
+
+<details>
+<summary><strong>Desktop, Treiber und Ton</strong></summary>
+
+> Unter "Profile" wählst du bei "Type" erst `Desktop`, dann in der langen Liste `KDE Plasma` (mit der Leertaste markieren) und danach `plasma-meta`.
+>
+> ![KDE Plasma in der Desktop-Liste](../img/07-kde-plasma.png)
+>
+> Im selben Menü liegt "Graphics driver". Das spart dir später Arbeit, such einfach deine Karte raus.
+>
+> ![Die Auswahl der Grafiktreiber](../img/08-grafiktreiber.png)
+>
+> Der Ton versteckt sich woanders, nämlich unter "Applications" → "Audio". Und Achtung: Voreingestellt ist "No audio server". Wenn du das so lässt, hast du hinterher keinen Ton.
+>
+> ![Audio-Auswahl mit pipewire](../img/09-audio-pipewire.png)
+
+</details>
+
+<details>
+<summary><strong>Benutzer anlegen</strong></summary>
+
+> Der Punkt heißt "Authentication", darunter "User account" und dort "Add a user". Nach Name und Passwort kommt die wichtigste Frage der ganzen Installation:
+>
+> ![Should arch be a superuser (sudo)?](../img/10-superuser-sudo.png)
+>
+> Hier muss `Yes` stehen. Sonst darf dein Benutzer später kein `sudo` benutzen und du kannst nichts installieren. Danach "Confirm and exit".
+
+</details>
+
+> **Achtung bei der Plattenauswahl:** "Use a best-effort default partition layout" löscht die ausgewählte Platte komplett, du siehst das an `Wipe: True`. Wenn auf dem Rechner noch Windows liegt und bleiben soll, darfst du das auf keinen Fall nehmen. Dann brauchst du "Manual Partitioning" und freien, nicht zugewiesenen Speicher. Mehr dazu bei [Dualboot](#6-dualboot-mit-windows).
+
+Wenn alles steht, wählst du "Install", bestätigst die Zusammenfassung mit `Yes` und kannst zuschauen.
+
+![Die laufende Installation](../img/12-installation-laeuft.png)
+
+Das dauert je nach Internet und Rechner ein paar Minuten. In unserem Testlauf waren es knapp drei.
+
+![Installation completed in 2m56s](../img/13-installation-fertig.png)
+
+Am Ende hast du drei Möglichkeiten: `Exit archinstall`, `Reboot system` und `chroot into installation for post-installation configurations`. Das chroot brauchst du nicht, nimm `Reboot system`. Stick rausziehen, fertig.
 
 ***
 
 ### 5. Der erste Start
 
-Du landest im Login und danach auf einem leeren KDE-Desktop. Die folgenden Sachen machst du einmal und danach nie wieder.
+Du landest im Anmeldebildschirm, meldest dich mit deinem Benutzer an und bist drin.
+
+![Der SDDM-Anmeldebildschirm](../img/15-anmeldung.png)
+
+![Der fertige Plasma-Desktop](../img/16-plasma-desktop.png)
+
+Das war es. Ab hier ist es ein normaler Rechner. Die folgenden Sachen machst du einmal und danach nie wieder.
 
 <details>
 <summary><strong>Netzwerk</strong></summary>
@@ -205,7 +281,9 @@ Du landest im Login und danach auf einem leeren KDE-Desktop. Die folgenden Sache
 <details>
 <summary><strong>Grafiktreiber</strong></summary>
 
-> Der offene AMD- und Intel-Treiber ist schon im Kernel, du installierst nur die Grafikbibliotheken dazu. Die `lib32`-Pakete brauchst du für Spiele und Wine, dafür muss `multilib` in `/etc/pacman.conf` aktiv sein.
+> Wenn du im Installer unter "Profile" → "Graphics driver" schon deine Karte ausgewählt hast, ist das hier erledigt und du kannst weiterblättern.
+>
+> Falls nicht: Der offene AMD- und Intel-Treiber ist schon im Kernel, du installierst nur die Grafikbibliotheken dazu. Die `lib32`-Pakete brauchst du für Spiele und Wine, dafür muss `multilib` in `/etc/pacman.conf` aktiv sein.
 >
 > AMD:
 >
@@ -252,15 +330,21 @@ Praktisch heißt das:
 - **Andere Systeme findet es auch von allein**, Windows eingeschlossen. Kein `os-prober`, kein Nachtragen.
 - Es sieht ohne Zutun schon anständig aus und lässt sich mit Designs komplett umbauen.
 
-<details>
-<summary><strong>Einrichten</strong></summary>
+**Wenn du in [Kapitel 4](#4-die-installation-selbst) `Refind` als Bootloader gewählt hast, ist hier nichts mehr zu tun.** Es läuft schon, du hast es beim Neustart gesehen:
 
+![Das rEFInd-Bootmenü](../img/14-refind-menue.png)
+
+<details>
+<summary><strong>Nachträglich einrichten</strong></summary>
+
+> Nur nötig, wenn du im Installer einen anderen Bootloader genommen hast.
+>
 > ```bash
 > yay -S refind
 > sudo refind-install
 > ```
 >
-> Das war es im Normalfall wirklich. `refind-install` kopiert rEFInd auf die EFI-Partition und trägt es als Starteintrag ein. Beim nächsten Neustart begrüßt dich das rEFInd-Menü.
+> `refind-install` kopiert rEFInd auf die EFI-Partition und trägt es als Starteintrag ein. Beim nächsten Neustart begrüßt dich das Menü von oben.
 >
 > Wenn dein Mainboard sich beim Starteintrag querstellt und rEFInd nicht kommt, hilft:
 >
@@ -612,7 +696,7 @@ yay -S plasma6-applets-arch-update-notifier
 
 #### Und was ist mit Discover?
 
-KDE bringt mit [Discover](https://apps.kde.org/discover/) einen grafischen Paketmanager mit, der Updates auch anzeigen und installieren kann. Ganz ohne Terminal, wenn du das willst.
+KDE bringt mit [Discover](https://apps.kde.org/discover/) einen grafischen Paketmanager mit, der Updates auch anzeigen und installieren kann. Ganz ohne Terminal, wenn du das willst. Es ist sowieso schon da, denn `plasma-meta` bringt es automatisch mit.
 
 Wir raten trotzdem davon ab:
 
