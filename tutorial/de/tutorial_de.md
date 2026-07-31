@@ -149,7 +149,7 @@ Du bist jetzt im Livesystem und siehst eine schwarze Konsole. Keine Panik, das i
 > | Menüpunkt              | Was du willst                                                    |
 > | ---------------------- | ---------------------------------------------------------------- |
 > | Disk configuration     | Die Platte, auf die Arch soll (siehe Warnung unten)              |
-> | Bootloader             | `grub`, wenn nur Linux draufkommt. Bei Dualboot [Kapitel 6](#6-dualboot-mit-windows) lesen, da nimmst du rEFInd |
+> | Bootloader             | `grub`, damit der erste Start sicher klappt. In [Kapitel 5](#5-der-erste-start) kommt danach rEFInd drauf |
 > | Profile                | `Desktop` und darin `KDE Plasma`                                  |
 > | Audio                  | `pipewire`                                                        |
 > | Network configuration  | `Use NetworkManager`                                              |
@@ -242,6 +242,59 @@ Du landest im Login und danach auf einem leeren KDE-Desktop. Die folgenden Sache
 
 </details>
 
+#### Das Bootmenü: rEFInd
+
+[rEFInd](https://www.rodsbooks.com/refind/) ist unsere Empfehlung für alle, egal ob Dualboot oder nicht. Es ist ein Boot**manager**, kein Bootloader im klassischen Sinn: Es schaut bei jedem Start selbst auf deinen Platten nach, was startbar ist, und baut daraus das Menü.
+
+Praktisch heißt das:
+
+- **Kernel-Images findet es von allein.** Neuer Kernel, zusätzlicher `linux-lts`, Fallback-Initramfs, alles taucht einfach auf. Du musst nach einem Update nie eine Konfiguration neu erzeugen, so wie du es bei GRUB mit `grub-mkconfig` machen müsstest.
+- **Andere Systeme findet es auch von allein**, Windows eingeschlossen. Kein `os-prober`, kein Nachtragen.
+- Es sieht ohne Zutun schon anständig aus und lässt sich mit Designs komplett umbauen.
+
+<details>
+<summary><strong>Einrichten</strong></summary>
+
+> ```bash
+> yay -S refind
+> sudo refind-install
+> ```
+>
+> Das war es im Normalfall wirklich. `refind-install` kopiert rEFInd auf die EFI-Partition und trägt es als Starteintrag ein. Beim nächsten Neustart begrüßt dich das rEFInd-Menü.
+>
+> Wenn dein Mainboard sich beim Starteintrag querstellt und rEFInd nicht kommt, hilft:
+>
+> ```bash
+> sudo refind-install --usedefault /dev/sdXY
+> ```
+>
+> `sdXY` ist dabei deine EFI-Partition, die findest du mit `lsblk -f` (die kleine mit `vfat`, meist 300 bis 1000 MB).
+
+</details>
+
+<details>
+<summary><strong>Aufräumen und hübsch machen</strong></summary>
+
+> Die Konfiguration liegt in `/boot/EFI/refind/refind.conf` und ist gut kommentiert. Zwei Sachen, die man am Anfang meistens will:
+>
+> - `timeout 5` stellt ein, wie lange das Menü stehenbleibt
+> - `dont_scan_volumes` und `dont_scan_files` blenden Einträge aus, die du nicht brauchst. rEFInd findet nämlich gern auch Wiederherstellungspartitionen und ähnliches
+>
+> Designs gibt es einige fertige zum Reinkopieren, eingebunden werden sie mit einer `include`-Zeile in der `refind.conf`.
+
+</details>
+
+<details>
+<summary><strong>Ehrenwerte Erwähnung: GRUB</strong></summary>
+
+> GRUB ist das, was die meisten Anleitungen im Netz nehmen, und es ist völlig in Ordnung. Es kann mehr Sonderfälle als rEFInd, etwa exotische Verschlüsselungs- und RAID-Aufbauten, und du findest zu jedem Problem Suchergebnisse.
+>
+> Der Preis ist Handarbeit: Nach Änderungen musst du `sudo grub-mkconfig -o /boot/grub/grub.cfg` laufen lassen, und für andere Betriebssysteme brauchst du zusätzlich `os-prober`. Für einen normalen Arch-Rechner mit KDE ist rEFInd inzwischen einfach das modernere Werkzeug und kann alles, was du brauchst.
+>
+> Wenn du in archinstall `grub` gewählt hast und dabei bleiben willst, überspring rEFInd einfach. Kaputt ist daran nichts.
+
+</details>
+
 ***
 
 ### 6. Dualboot mit Windows
@@ -275,48 +328,12 @@ Nur für dich, wenn Windows auf dem Rechner bleiben soll. Wenn du eh alles platt
 
 </details>
 
-#### rEFInd als Bootmenü
-
-Für Dualboot ist [rEFInd](https://www.rodsbooks.com/refind/) unsere klare Empfehlung. Der Unterschied zu GRUB: rEFInd schaut bei jedem Start selbst nach, was auf deinen Platten startbar ist, und findet Windows von allein. Du musst also keine Konfiguration schreiben und nach jedem Kernel-Update auch nichts neu bauen. Dazu sieht das Menü ohne Zutun schon anständig aus und lässt sich mit Designs umbauen.
-
 <details>
-<summary><strong>Einrichten</strong></summary>
+<summary><strong>Windows ins Bootmenü holen</strong></summary>
 
-> ```bash
-> yay -S refind
-> sudo refind-install
-> ```
+> Wenn du rEFInd aus [Kapitel 5](#5-der-erste-start) eingerichtet hast: gar nichts. rEFInd findet Windows beim nächsten Start von allein und stellt es neben Arch ins Menü. Genau dafür haben wir es genommen.
 >
-> Das war es im Normalfall wirklich. `refind-install` kopiert rEFInd auf die EFI-Partition und trägt es als Starteintrag ein. Beim nächsten Neustart bekommst du ein Menü mit Arch und Windows nebeneinander, ohne dass du eins von beidem eintragen musstest.
->
-> Wenn dein Mainboard sich beim Starteintrag querstellt und rEFInd nicht kommt, hilft:
->
-> ```bash
-> sudo refind-install --usedefault /dev/sdXY
-> ```
->
-> `sdXY` ist dabei deine EFI-Partition, die findest du mit `lsblk -f` (die kleine mit `vfat`, meist 300 bis 1000 MB).
-
-</details>
-
-<details>
-<summary><strong>Aufräumen und hübsch machen</strong></summary>
-
-> Die Konfiguration liegt in `/boot/EFI/refind/refind.conf` und ist gut kommentiert. Zwei Sachen, die man am Anfang meistens will:
->
-> - `timeout 5` stellt ein, wie lange das Menü stehenbleibt
-> - `dont_scan_volumes` und `dont_scan_files` blenden Einträge aus, die du nicht brauchst. rEFInd findet nämlich gern auch Wiederherstellungspartitionen und ähnliches
->
-> Designs gibt es einige fertige zum Reinkopieren, eingebunden werden sie mit einer `include`-Zeile in der `refind.conf`.
-
-</details>
-
-<details>
-<summary><strong>Wenn du lieber bei GRUB bleibst</strong></summary>
-
-> Geht auch, ist nur mehr Handarbeit. Du brauchst `os-prober`, musst in `/etc/default/grub` die Zeile `GRUB_DISABLE_OS_PROBER=false` setzen und danach `sudo grub-mkconfig -o /boot/grub/grub.cfg` laufen lassen. Taucht Windows in der Ausgabe nicht auf, ist gerade die Windows-EFI-Partition nicht eingehängt.
->
-> Und wer gar kein Bootmenü will, wählt einfach bei jedem Start im BIOS-Bootmenü aus (meist F8, F11 oder F12). Unbequem, geht aber nie kaputt.
+> Nur falls du bei GRUB geblieben bist, ist Handarbeit fällig. Du brauchst `os-prober`, musst in `/etc/default/grub` die Zeile `GRUB_DISABLE_OS_PROBER=false` setzen und danach `sudo grub-mkconfig -o /boot/grub/grub.cfg` laufen lassen. Taucht Windows in der Ausgabe nicht auf, ist gerade die Windows-EFI-Partition nicht eingehängt.
 
 </details>
 
