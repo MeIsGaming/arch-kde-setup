@@ -149,7 +149,7 @@ Du bist jetzt im Livesystem und siehst eine schwarze Konsole. Keine Panik, das i
 > | Menüpunkt              | Was du willst                                                    |
 > | ---------------------- | ---------------------------------------------------------------- |
 > | Disk configuration     | Die Platte, auf die Arch soll (siehe Warnung unten)              |
-> | Bootloader             | `systemd-boot` reicht völlig, für Dualboot kommt in [Kapitel 6](#6-dualboot-mit-windows) rEFInd oben drauf |
+> | Bootloader             | `grub`, wenn nur Linux draufkommt. Bei Dualboot [Kapitel 6](#6-dualboot-mit-windows) lesen, da nimmst du rEFInd |
 > | Profile                | `Desktop` und darin `KDE Plasma`                                  |
 > | Audio                  | `pipewire`                                                        |
 > | Network configuration  | `Use NetworkManager`                                              |
@@ -404,16 +404,19 @@ Der Teil, für den sich der ganze Aufwand lohnt. KDE lässt sich bis zur Unkennt
 </details>
 
 <details>
-<summary><strong>Flatpak dazu</strong></summary>
+<summary><strong>Flatpak brauchst du eigentlich nicht</strong></summary>
 
-> Manche Programme gibt es weder im Repo noch im AUR, dafür als Flatpak. Lohnt sich vor allem bei Sachen, die sonst ewig zu bauen wären.
+> Flatpak macht im Kern dasselbe wie Discover: Es lädt fertig kompilierte Pakete, die jemand anderes für alle gebaut hat, und schleppt eigene Bibliotheken mit. Das heißt größere Downloads, Abhängigkeiten doppelt und dreifach auf der Platte, und noch ein zweites Update-System neben `yay`. Auf Arch ist das schlicht Ballast, du hast ja das AUR.
+>
+> Es gibt genau einen Fall, in dem es sich trotzdem lohnt: wenn ein Programm ausschließlich als Flatpak verteilt wird. Das bekannteste Beispiel ist Roblox. Das läuft unter Linux über [Sober](https://sober.vinegarhq.org/), und Sober gibt es nur als Flatpak.
 >
 > ```bash
 > yay -S flatpak
 > flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+> flatpak install flathub org.vinegarhq.Sober
 > ```
 >
-> Installiert wird dann mit `flatpak install flathub name.des.programms`. Halt dich damit trotzdem zurück, Flatpaks sind größer und brauchen ihre eigenen Updates (`flatpak update`).
+> Für alles andere gilt: erst `yay -S name` probieren. Wenn du es dort findest, nimm das.
 
 </details>
 
