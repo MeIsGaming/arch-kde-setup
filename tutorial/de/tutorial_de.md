@@ -185,6 +185,24 @@ Du landest im Login und danach auf einem leeren KDE-Desktop. Die folgenden Sache
 </details>
 
 <details>
+<summary><strong>yay installieren, und zwar als Erstes</strong></summary>
+
+> Das ist der wichtigste Handgriff auf dieser Seite. `yay` holt dir offizielle Pakete und AUR mit demselben Befehl, und das AUR ist der halbe Grund für Arch. Ab hier benutzen wir im ganzen Tutorial nur noch `yay`.
+>
+> ```bash
+> sudo pacman -S --needed base-devel git
+> git clone https://aur.archlinux.org/yay.git
+> cd yay
+> makepkg -si
+> ```
+>
+> Bis hierhin ging es nur mit `pacman`, weil `yay` ja noch nicht da war. Ab jetzt brauchst du es nicht mehr. Den `yay`-Ordner kannst du löschen.
+>
+> Installiert wird ab jetzt mit `yay -S paketname`, ohne `sudo` davor. yay fragt selbst nach deinem Passwort, wenn es eins braucht. Mehr dazu in [Kapitel 9](#9-updates-im-blick-behalten).
+
+</details>
+
+<details>
 <summary><strong>Grafiktreiber</strong></summary>
 
 > Der offene AMD- und Intel-Treiber ist schon im Kernel, du installierst nur die Grafikbibliotheken dazu. Die `lib32`-Pakete brauchst du für Spiele und Wine, dafür muss `multilib` in `/etc/pacman.conf` aktiv sein.
@@ -192,19 +210,19 @@ Du landest im Login und danach auf einem leeren KDE-Desktop. Die folgenden Sache
 > AMD:
 >
 > ```bash
-> sudo pacman -S mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon
+> yay -S mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon
 > ```
 >
 > Intel:
 >
 > ```bash
-> sudo pacman -S mesa lib32-mesa vulkan-intel lib32-vulkan-intel
+> yay -S mesa lib32-mesa vulkan-intel lib32-vulkan-intel
 > ```
 >
 > NVIDIA ist der einzige Fall, wo es etwas fummeliger wird. Für alles ab RTX 2000:
 >
 > ```bash
-> sudo pacman -S nvidia-open-dkms nvidia-utils lib32-nvidia-utils
+> yay -S nvidia-open-dkms nvidia-utils lib32-nvidia-utils
 > ```
 >
 > Bei älteren Karten nimmst du `nvidia-dkms` statt `nvidia-open-dkms`. Danach einmal neu starten. Details stehen im [Wiki](https://wiki.archlinux.org/title/NVIDIA).
@@ -217,26 +235,10 @@ Du landest im Login und danach auf einem leeren KDE-Desktop. Die folgenden Sache
 > Mit `pipewire` aus dem Installer läuft der Ton normalerweise sofort. Wenn nicht:
 >
 > ```bash
-> sudo pacman -S pipewire pipewire-pulse pipewire-alsa wireplumber
+> yay -S pipewire pipewire-pulse pipewire-alsa wireplumber
 > ```
 >
 > Danach ab- und wieder anmelden. Ausgabegerät wählst du per Klick auf das Lautsprechersymbol in der Leiste.
-
-</details>
-
-<details>
-<summary><strong>yay installieren</strong></summary>
-
-> Das brauchst du für alles aus dem AUR, und das ist der halbe Grund für Arch. Siehe auch [Kapitel 9](#9-updates-im-blick-behalten).
->
-> ```bash
-> sudo pacman -S --needed base-devel git
-> git clone https://aur.archlinux.org/yay.git
-> cd yay
-> makepkg -si
-> ```
->
-> Danach kannst du den `yay`-Ordner löschen. Ab jetzt installierst du mit `yay -S paketname` und bekommst offizielle Pakete und AUR aus demselben Befehl.
 
 </details>
 
@@ -265,7 +267,7 @@ Nur für dich, wenn Windows auf dem Rechner bleiben soll. Wenn du eh alles platt
 <summary><strong>Windows-Platte unter Linux öffnen</strong></summary>
 
 > ```bash
-> sudo pacman -S ntfs-3g
+> yay -S ntfs-3g
 > lsblk -f
 > ```
 >
@@ -281,7 +283,7 @@ Für Dualboot ist [rEFInd](https://www.rodsbooks.com/refind/) unsere klare Empfe
 <summary><strong>Einrichten</strong></summary>
 
 > ```bash
-> sudo pacman -S refind
+> yay -S refind
 > sudo refind-install
 > ```
 >
@@ -350,7 +352,7 @@ Arch startet mit eingeschaltetem Secure Boot erstmal nicht, weil der Bootloader 
 > Damit bleibt Secure Boot an und dein Rechner vertraut deinem eigenen Arch. Braucht ein BIOS, in dem sich die vorhandenen Schlüssel löschen lassen ("Setup Mode", oft versteckt hinter "Clear Secure Boot Keys" oder "Reset to Custom Mode").
 >
 > ```bash
-> sudo pacman -S sbctl
+> yay -S sbctl
 > sudo sbctl status
 > ```
 >
@@ -407,7 +409,7 @@ Der Teil, für den sich der ganze Aufwand lohnt. KDE lässt sich bis zur Unkennt
 > Manche Programme gibt es weder im Repo noch im AUR, dafür als Flatpak. Lohnt sich vor allem bei Sachen, die sonst ewig zu bauen wären.
 >
 > ```bash
-> sudo pacman -S flatpak
+> yay -S flatpak
 > flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 > ```
 >
@@ -424,10 +426,10 @@ Läuft besser, als die meisten denken. Der Großteil der Windows-Spiele startet 
 <details>
 <summary><strong>Steam und Proton</strong></summary>
 
-> Steam braucht `multilib`. Falls du es noch nicht aktiviert hast, in `/etc/pacman.conf` die beiden Zeilen bei `[multilib]` entkommentieren, dann `sudo pacman -Syu`.
+> Steam braucht `multilib`. Falls du es noch nicht aktiviert hast, in `/etc/pacman.conf` die beiden Zeilen bei `[multilib]` entkommentieren, dann einmal `yay` laufen lassen.
 >
 > ```bash
-> sudo pacman -S steam
+> yay -S steam
 > ```
 >
 > In Steam unter Einstellungen, "Compatibility", beide Haken für Steam Play setzen. Damit laufen auch Spiele, die offiziell kein Linux können. Ob dein Spiel dabei ist, steht auf [ProtonDB](https://www.protondb.com/).
@@ -440,11 +442,16 @@ Läuft besser, als die meisten denken. Der Großteil der Windows-Spiele startet 
 <summary><strong>Alles außerhalb von Steam</strong></summary>
 
 > ```bash
-> sudo pacman -S lutris
 > yay -S heroic-games-launcher-bin
 > ```
 >
-> Lutris deckt GOG und einzelne Windows-Spiele ab, Heroic ist für Epic, GOG und Amazon.
+> [Heroic](https://heroicgameslauncher.com/) ist unsere Empfehlung. Epic, GOG und Amazon in einer aufgeräumten Oberfläche, Proton-Version pro Spiel direkt auswählbar, läuft ohne Gefummel.
+>
+> [Lutris](https://lutris.net/) kann dafür mehr Sonderfälle: alte Windows-Spiele, Emulatoren, Battle.net, und für vieles gibt es fertige Installationsskripte. Die Oberfläche ist aber deutlich unübersichtlicher. Nimm es als zweiten Versuch, wenn Heroic dein Spiel nicht abdeckt:
+>
+> ```bash
+> yay -S lutris
+> ```
 
 </details>
 
@@ -452,7 +459,7 @@ Läuft besser, als die meisten denken. Der Großteil der Windows-Spiele startet 
 <summary><strong>Nützliches Beiwerk</strong></summary>
 
 > ```bash
-> sudo pacman -S gamemode lib32-gamemode mangohud lib32-mangohud
+> yay -S gamemode lib32-gamemode mangohud lib32-mangohud
 > ```
 >
 > `gamemode` stellt den Rechner beim Spielen auf Leistung um, `mangohud` blendet FPS und Auslastung ein. In Steam trägst du das pro Spiel unter Startoptionen ein:
@@ -474,36 +481,44 @@ Arch ist ein [Rolling Release](https://wiki.archlinux.org/title/Arch_Linux#Rolli
 #### Der eine Befehl, den du brauchst
 
 ```bash
-sudo pacman -Syu
+yay
 ```
 
-`S` installiert, `y` holt die aktuelle Paketdatenbank, `u` bringt alle installierten Pakete auf den neuesten Stand. Mehr ist es nicht. Einmal die Woche reicht völlig, wenn du länger nicht am PC warst, machst du es halt dann.
+Ein Wort, kein Argument, kein `sudo`. Das aktualisiert offizielle Pakete und AUR in einem Rutsch, fragt nach deinem Passwort und ist danach fertig. Einmal die Woche reicht völlig, wenn du länger nicht am PC warst, machst du es halt dann.
+
+Genau deshalb haben wir `yay` in [Kapitel 5](#5-der-erste-start) so früh eingerichtet. Mit `pacman` allein müsstest du an zwei Stellen aktualisieren und würdest deine AUR-Pakete stillschweigend liegen lassen.
+
+<details>
+<summary><strong>Was dabei im Hintergrund passiert</strong></summary>
+
+> `yay` ruft für die offiziellen Pakete `pacman -Syu` auf und kümmert sich danach selbst um das AUR. Die Buchstaben heißen: `S` installiert, `y` holt die aktuelle Paketdatenbank, `u` bringt alle installierten Pakete auf den neuesten Stand.
+>
+> Wissen musst du das nicht, um Arch zu benutzen. Es hilft nur, wenn du mal eine Fehlermeldung googelst und in fremden Anleitungen `pacman`-Befehle siehst.
+
+</details>
 
 <details>
 <summary><strong>Wichtig: niemals nur "-Sy" benutzen</strong></summary>
 
-> `sudo pacman -Sy paketname` sieht harmlos aus, ist aber der häufigste Weg, sich Arch kaputt zu machen. Du holst dir damit die neue Paketdatenbank, installierst aber nur ein einziges Paket daraus. Das neue Paket erwartet dann Bibliotheken in Versionen, die auf deinem System noch gar nicht liegen. Das nennt sich [partial upgrade](https://wiki.archlinux.org/title/System_maintenance#Partial_upgrades_are_unsupported) und wird von Arch nicht unterstützt.
+> `yay -Sy paketname` (oder `sudo pacman -Sy paketname`) sieht harmlos aus, ist aber der häufigste Weg, sich Arch kaputt zu machen. Du holst dir damit die neue Paketdatenbank, installierst aber nur ein einziges Paket daraus. Das neue Paket erwartet dann Bibliotheken in Versionen, die auf deinem System noch gar nicht liegen. Das nennt sich [partial upgrade](https://wiki.archlinux.org/title/System_maintenance#Partial_upgrades_are_unsupported) und wird von Arch nicht unterstützt.
 >
-> Merksatz: Das `y` kommt nie ohne das `u`. Wenn du ein einzelnes Paket willst, nimm `sudo pacman -S paketname` ohne `y`, oder mach direkt ein volles `-Syu`.
+> Merksatz: Das `y` kommt nie ohne das `u`. Wenn du ein einzelnes Paket willst, nimm `yay -S paketname` ohne `y`. Und wenn dir jemand im Internet ein `-Sy` hinschreibt, mach stattdessen einfach ein volles `yay`.
 
 </details>
 
 ***
 
-#### AUR dazu
+#### Warum das AUR den Unterschied macht
 
 Das [AUR](https://wiki.archlinux.org/title/Arch_User_Repository) ist die von Nutzern gepflegte Paketsammlung neben den offiziellen Repos, und ehrlich gesagt der Grund, warum sich Arch überhaupt lohnt. Da liegt nicht nur vieles drin, was es sonst nirgends gibt. Ein AUR-Paket ist auch kein fertiges Programm, sondern ein Bauplan (`PKGBUILD`), der auf deinem Rechner übersetzt wird. Du kannst also Software für dein Setup bauen statt zu nehmen, was jemand anderes für alle vorkompiliert hat.
 
-AUR-Pakete werden nicht von `pacman` aktualisiert, dafür brauchst du einen Helper wie [yay](https://github.com/Jguer/yay).
-
 ```bash
-yay -Qua   # zeigt nur, was im AUR ein Update hat
-yay        # aktualisiert offizielle Repos und AUR in einem Rutsch
+yay -S paketname   # installiert, egal ob offizielles Repo oder AUR
+yay -Qua           # zeigt nur, was im AUR ein Update hat
+yay -Rns paketname # deinstalliert samt Abhängigkeiten und Konfiguration
 ```
 
-Wenn du `yay` benutzt, ersetzt der zweite Befehl dein `sudo pacman -Syu`. Beides doppelt machen musst du nicht.
-
-> [paru](https://github.com/Morganamilo/paru) macht im Grunde dasselbe und ist genauso in Ordnung, und `pacman` allein reicht dir auch, solange du nichts aus dem AUR willst. In diesem Tutorial bleiben wir bei `yay`, damit die Befehle überall gleich aussehen.
+> [paru](https://github.com/Morganamilo/paru) macht im Grunde dasselbe und ist genauso in Ordnung. In diesem Tutorial bleiben wir bei `yay`, damit die Befehle überall gleich aussehen.
 
 ***
 
@@ -587,4 +602,4 @@ Wir raten trotzdem davon ab:
 
 Vor allem aber: Wer nur klickt und nur nimmt, was vorkompiliert bei ihm ankommt, kann auch gleich bei Windows bleiben. Da funktioniert genau das nämlich schon ziemlich gut. Arch wird erst interessant, wenn du dir mit `yay` Sachen holst und baust, die zu deinem Rechner passen.
 
-Und `sudo pacman -Syu` ist ein Befehl, den du dir einmal merkst und danach nie wieder nachschlägst. Das ist ehrlich weniger Aufwand als es aussieht.
+Und `yay` sind drei Buchstaben, die du dir einmal merkst und danach nie wieder nachschlägst. Das ist ehrlich weniger Aufwand als es aussieht.
