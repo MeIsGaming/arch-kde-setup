@@ -161,7 +161,7 @@ Von den vielen Punkten sind nur diese sieben wichtig, den Rest kannst du so lass
 | Bootloader                      | `Refind` (siehe unten, warum)                                        |
 | Profile → Type                  | `Desktop` und darin `KDE Plasma`, dann `plasma-meta`                 |
 | Profile → Graphics driver       | Deine Grafikkarte, im Zweifel `All open-source`                      |
-| Profile → Greeter               | `sddm`                                                                |
+| Profile → Greeter               | `plasma-login-manager`                                                |
 | Applications → Audio            | `pipewire` (steht sonst auf "No audio server", also kein Ton)        |
 | Authentication → User account   | Benutzer anlegen und die Frage nach Superuser mit `Yes` beantworten  |
 | Network configuration           | `Use Network Manager (default backend)`                              |
@@ -205,9 +205,11 @@ Von den vielen Punkten sind nur diese sieben wichtig, den Rest kannst du so lass
 >
 > ![Die Auswahl der Grafiktreiber](../img/08-grafiktreiber.png)
 >
-> Der Ton versteckt sich woanders, nämlich unter "Applications" → "Audio". Und Achtung: Voreingestellt ist "No audio server". Wenn du das so lässt, hast du hinterher keinen Ton.
+> Der Ton versteckt sich woanders, nämlich unter "Applications" → "Audio".
 >
-> ![Audio-Auswahl mit pipewire](../img/09-audio-pipewire.png)
+> ![Die Audio-Auswahl, der Balken steht auf No audio server](../img/09-audio-pipewire.png)
+>
+> **Genau so sieht es aus, wenn du das Menü öffnest, und genau so darfst du es nicht lassen.** Der Balken steht auf "No audio server", das ist die Voreinstellung. Geh eine Zeile runter auf `pipewire` und bestätige mit Enter. Wer hier nur draufschaut und weiterklickt, hat hinterher einen fertigen Desktop ohne Ton und sucht den Fehler dann bei den Lautsprechern.
 
 </details>
 
@@ -240,7 +242,7 @@ Am Ende hast du drei Möglichkeiten: `Exit archinstall`, `Reboot system` und `ch
 
 Du landest im Anmeldebildschirm, meldest dich mit deinem Benutzer an und bist drin.
 
-![Der SDDM-Anmeldebildschirm](../img/15-anmeldung.png)
+![Der Anmeldebildschirm des Plasma Login Managers](../img/15-anmeldung.png)
 
 ![Der fertige Plasma-Desktop](../img/16-plasma-desktop.png)
 
