@@ -111,7 +111,339 @@ Unterschiedlich von Gerät zu Gerät, aber normalerweise:
 
 ***
 
-### 4. Updates im Blick behalten
+### 4. Die Installation selbst
+
+Du bist jetzt im Livesystem und siehst eine schwarze Konsole. Keine Panik, das ist der unbequemste Moment der ganzen Installation und er dauert etwa zehn Minuten.
+
+<details>
+<summary><strong>Erstmal Tastatur und Internet</strong></summary>
+
+> Deutsches Tastaturlayout, sonst suchst du dich beim Passwort dumm und dämlich:
+>
+> ```bash
+> loadkeys de-latin1
+> ```
+>
+> Per Kabel bist du schon online. Für WLAN:
+>
+> ```bash
+> iwctl
+> station wlan0 get-networks
+> station wlan0 connect DEIN_WLAN
+> exit
+> ```
+>
+> Testen mit `ping -c3 archlinux.org`.
+
+</details>
+
+<details>
+<summary><strong>archinstall starten</strong></summary>
+
+> ```bash
+> archinstall
+> ```
+>
+> Das ist der offizielle Installer, du klickst dich mit den Pfeiltasten durch ein Menü. Die Punkte, auf die es ankommt:
+>
+> | Menüpunkt              | Was du willst                                                    |
+> | ---------------------- | ---------------------------------------------------------------- |
+> | Disk configuration     | Die Platte, auf die Arch soll (siehe Warnung unten)              |
+> | Bootloader             | `grub`, wenn du Dualboot planst, sonst ist `systemd-boot` schlanker |
+> | Profile                | `Desktop` und darin `KDE Plasma`                                  |
+> | Audio                  | `pipewire`                                                        |
+> | Network configuration  | `Use NetworkManager`                                              |
+> | Additional packages    | `git base-devel pacman-contrib`                                   |
+> | User account           | Benutzer anlegen und als Superuser markieren, sonst kein `sudo`  |
+>
+> Danach "Install" und warten. Der Rest läuft von allein.
+
+</details>
+
+> **Achtung bei der Plattenauswahl:** Der Punkt "Use a best-effort default partition layout" löscht die ausgewählte Platte komplett. Wenn auf dem Rechner noch Windows liegt und bleiben soll, darfst du das auf keinen Fall nehmen. Dann brauchst du manuelle Partitionierung und freien, nicht zugewiesenen Speicher. Mehr dazu unten bei [Dualboot](#6-dualboot-mit-windows).
+
+Am Ende fragt archinstall, ob du noch ins neue System willst ("chroot"). Kannst du mit Nein beantworten. Stick rausziehen, neu starten, fertig.
+
+***
+
+### 5. Der erste Start
+
+Du landest im Login und danach auf einem leeren KDE-Desktop. Die folgenden Sachen machst du einmal und danach nie wieder.
+
+<details>
+<summary><strong>Netzwerk</strong></summary>
+
+> Wenn du bei archinstall `NetworkManager` gewählt hast, ist alles schon da. WLAN wählst du oben rechts im Systemabschnitt der Leiste aus.
+>
+> Falls das Symbol fehlt:
+>
+> ```bash
+> sudo pacman -S networkmanager plasma-nm
+> sudo systemctl enable --now NetworkManager
+> ```
+
+</details>
+
+<details>
+<summary><strong>Grafiktreiber</strong></summary>
+
+> Der offene AMD- und Intel-Treiber ist schon im Kernel, du installierst nur die Grafikbibliotheken dazu. Die `lib32`-Pakete brauchst du für Spiele und Wine, dafür muss `multilib` in `/etc/pacman.conf` aktiv sein.
+>
+> AMD:
+>
+> ```bash
+> sudo pacman -S mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon
+> ```
+>
+> Intel:
+>
+> ```bash
+> sudo pacman -S mesa lib32-mesa vulkan-intel lib32-vulkan-intel
+> ```
+>
+> NVIDIA ist der einzige Fall, wo es etwas fummeliger wird. Für alles ab RTX 2000:
+>
+> ```bash
+> sudo pacman -S nvidia-open-dkms nvidia-utils lib32-nvidia-utils
+> ```
+>
+> Bei älteren Karten nimmst du `nvidia-dkms` statt `nvidia-open-dkms`. Danach einmal neu starten. Details stehen im [Wiki](https://wiki.archlinux.org/title/NVIDIA).
+
+</details>
+
+<details>
+<summary><strong>Ton</strong></summary>
+
+> Mit `pipewire` aus dem Installer läuft der Ton normalerweise sofort. Wenn nicht:
+>
+> ```bash
+> sudo pacman -S pipewire pipewire-pulse pipewire-alsa wireplumber
+> ```
+>
+> Danach ab- und wieder anmelden. Ausgabegerät wählst du per Klick auf das Lautsprechersymbol in der Leiste.
+
+</details>
+
+<details>
+<summary><strong>yay installieren</strong></summary>
+
+> Das brauchst du für alles aus dem AUR, und das ist der halbe Grund für Arch. Siehe auch [Kapitel 9](#9-updates-im-blick-behalten).
+>
+> ```bash
+> sudo pacman -S --needed base-devel git
+> git clone https://aur.archlinux.org/yay.git
+> cd yay
+> makepkg -si
+> ```
+>
+> Danach kannst du den `yay`-Ordner löschen. Ab jetzt installierst du mit `yay -S paketname` und bekommst offizielle Pakete und AUR aus demselben Befehl.
+
+</details>
+
+***
+
+### 6. Dualboot mit Windows
+
+Nur für dich, wenn Windows auf dem Rechner bleiben soll. Wenn du eh alles plattgemacht hast, überspring das Kapitel.
+
+<details>
+<summary><strong>Zuerst: Windows-Schnellstart ausschalten</strong></summary>
+
+> Das ist der wichtigste Punkt im ganzen Kapitel und wird am häufigsten vergessen. Windows fährt mit "Schnellstart" nicht wirklich runter, sondern legt sich schlafen und lässt seine Platte dabei als "in Benutzung" markiert. Linux weigert sich dann, sie zu beschreiben, oder du schießt dir im schlimmsten Fall die Dateien kaputt.
+>
+> In Windows: Systemsteuerung, Energieoptionen, "Auswählen, was beim Drücken von Netzschaltern geschehen soll", dann "Einige Einstellungen sind momentan nicht verfügbar" anklicken und den Haken bei "Schnellstart aktivieren" rausnehmen.
+>
+> Winterschlaf gleich mit aus, in einer Eingabeaufforderung als Administrator:
+>
+> ```
+> powercfg /h off
+> ```
+
+</details>
+
+<details>
+<summary><strong>Windows-Platte unter Linux öffnen</strong></summary>
+
+> ```bash
+> sudo pacman -S ntfs-3g
+> lsblk -f
+> ```
+>
+> `lsblk -f` zeigt dir alle Partitionen mit Dateisystem. Die große mit `ntfs` ist deine Windows-Platte. Öffnen kannst du sie danach einfach in Dolphin über die Seitenleiste, um sie automatisch bei jedem Start einzuhängen, brauchst du einen Eintrag in der [fstab](https://wiki.archlinux.org/title/Fstab).
+
+</details>
+
+<details>
+<summary><strong>Windows ins Bootmenü holen</strong></summary>
+
+> Wenn du bei archinstall `grub` genommen hast:
+>
+> ```bash
+> sudo pacman -S os-prober
+> ```
+>
+> Dann in `/etc/default/grub` die Zeile `GRUB_DISABLE_OS_PROBER=false` eintragen oder das `#` davor entfernen. Die Sperre ist Absicht, ohne sie durchsucht GRUB fremde Platten. Danach:
+>
+> ```bash
+> sudo grub-mkconfig -o /boot/grub/grub.cfg
+> ```
+>
+> In der Ausgabe muss Windows auftauchen. Wenn nicht, ist die Windows-EFI-Partition gerade nicht eingehängt.
+>
+> Alternativ kannst du GRUB weglassen und im BIOS-Bootmenü (meist F8, F11 oder F12) jedes Mal auswählen, was starten soll. Ist unbequemer, geht aber nie kaputt.
+
+</details>
+
+<details>
+<summary><strong>Die Uhr geht plötzlich falsch</strong></summary>
+
+> Klassiker: Nach dem Wechsel zwischen Linux und Windows ist die Uhrzeit um ein paar Stunden verschoben. Grund ist, dass Linux die Hardwareuhr auf UTC stellt und Windows sie als Ortszeit liest.
+>
+> Reparieren solltest du das auf der Windows-Seite, nicht auf der Linux-Seite. In einer Eingabeaufforderung als Administrator:
+>
+> ```
+> reg add "HKLM\SYSTEM\CurrentControlSet\Control\TimeZoneInformation" /v RealTimeIsUniversal /t REG_DWORD /d 1 /f
+> ```
+
+</details>
+
+#### Secure Boot
+
+Arch startet mit eingeschaltetem Secure Boot erstmal nicht, weil der Bootloader keine Signatur hat, der dein Mainboard vertraut. Zwei Wege raus.
+
+<details>
+<summary><strong>Der einfache Weg: ausschalten</strong></summary>
+
+> Ins BIOS (beim Hochfahren meist ENTF oder F2), unter "Boot" oder "Security" Secure Boot auf Disabled. Fertig.
+>
+> **Vorher wichtig, wenn du Windows behältst:** Prüf in Windows unter "Geräteverschlüsselung" oder "BitLocker", ob deine Platte verschlüsselt ist. Wenn ja, sichere den Wiederherstellungsschlüssel oder setz BitLocker vorher aus. BitLocker merkt sich den Secure-Boot-Zustand, und wenn der sich ändert, fragt Windows beim nächsten Start nach dem 48-stelligen Schlüssel. Ohne den kommst du nicht mehr an deine Daten.
+
+</details>
+
+<details>
+<summary><strong>Die Kür: eigene Schlüssel mit sbctl</strong></summary>
+
+> Damit bleibt Secure Boot an und dein Rechner vertraut deinem eigenen Arch. Braucht ein BIOS, in dem sich die vorhandenen Schlüssel löschen lassen ("Setup Mode", oft versteckt hinter "Clear Secure Boot Keys" oder "Reset to Custom Mode").
+>
+> ```bash
+> sudo pacman -S sbctl
+> sudo sbctl status
+> ```
+>
+> Bei `Setup Mode: Enabled` kann es losgehen:
+>
+> ```bash
+> sudo sbctl create-keys
+> sudo sbctl enroll-keys -m
+> ```
+>
+> Das `-m` ist bei Dualboot Pflicht. Es behält die Microsoft-Schlüssel, sonst startet Windows nicht mehr. Manche Mainboards und Grafikkarten brauchen sie auch für sich selbst, also lass es auch ohne Windows lieber drin.
+>
+> Dann signieren, was am Start beteiligt ist:
+>
+> ```bash
+> sudo sbctl sign -s /boot/vmlinuz-linux
+> sudo sbctl sign -s /boot/EFI/GRUB/grubx64.efi
+> sudo sbctl verify
+> ```
+>
+> `sbctl verify` listet auf, was noch unsigniert ist. Der Pfad zur EFI-Datei hängt von deinem Bootloader ab, deshalb erst `verify` laufen lassen und dann die genannten Dateien signieren. Um Kernel-Updates musst du dich danach nicht kümmern, sbctl hängt sich in pacman ein und signiert automatisch nach. Zum Schluss Secure Boot im BIOS wieder an.
+>
+> Volle Anleitung im [Wiki](https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot#sbctl).
+
+</details>
+
+***
+
+### 7. KDE nach deinem Geschmack
+
+Der Teil, für den sich der ganze Aufwand lohnt. KDE lässt sich bis zur Unkenntlichkeit umbauen, und zwar komplett per Klick in den Systemeinstellungen.
+
+<details>
+<summary><strong>Aussehen ändern</strong></summary>
+
+> Systemeinstellungen, "Erscheinungsbild und Design". Bei "Designs" gibt es unten den Knopf "Neue Designs holen", der lädt direkt aus dem [KDE Store](https://store.kde.org/). Dasselbe gibt es getrennt für Symbole, Mauszeiger, Fensterdekorationen und Anmeldebildschirm.
+>
+> Wenn du ein komplettes Design nimmst, ändert es Farben, Symbole und Leiste auf einmal. Rückgängig machen geht immer, das Standarddesign heißt "Breeze".
+
+</details>
+
+<details>
+<summary><strong>Leiste und Miniprogramme</strong></summary>
+
+> Rechtsklick auf die Leiste, "Miniprogramme hinzufügen". Über "Neue Miniprogramme holen" kommst du wieder in den Store. Die Leiste selbst kannst du unter "Leiste einrichten" verschieben, verstecken oder in der Höhe ändern.
+>
+> Ein Miniprogramm, das sich für Arch wirklich lohnt, steht in [Kapitel 9](#9-updates-im-blick-behalten).
+
+</details>
+
+<details>
+<summary><strong>Flatpak dazu</strong></summary>
+
+> Manche Programme gibt es weder im Repo noch im AUR, dafür als Flatpak. Lohnt sich vor allem bei Sachen, die sonst ewig zu bauen wären.
+>
+> ```bash
+> sudo pacman -S flatpak
+> flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+> ```
+>
+> Installiert wird dann mit `flatpak install flathub name.des.programms`. Halt dich damit trotzdem zurück, Flatpaks sind größer und brauchen ihre eigenen Updates (`flatpak update`).
+
+</details>
+
+***
+
+### 8. Gaming
+
+Läuft besser, als die meisten denken. Der Großteil der Windows-Spiele startet einfach.
+
+<details>
+<summary><strong>Steam und Proton</strong></summary>
+
+> Steam braucht `multilib`. Falls du es noch nicht aktiviert hast, in `/etc/pacman.conf` die beiden Zeilen bei `[multilib]` entkommentieren, dann `sudo pacman -Syu`.
+>
+> ```bash
+> sudo pacman -S steam
+> ```
+>
+> In Steam unter Einstellungen, "Compatibility", beide Haken für Steam Play setzen. Damit laufen auch Spiele, die offiziell kein Linux können. Ob dein Spiel dabei ist, steht auf [ProtonDB](https://www.protondb.com/).
+>
+> Wenn ein Spiel zickt, lohnt sich eine andere Proton-Version. Die holst du dir bequem mit `yay -S protonup-qt`.
+
+</details>
+
+<details>
+<summary><strong>Alles außerhalb von Steam</strong></summary>
+
+> ```bash
+> sudo pacman -S lutris
+> yay -S heroic-games-launcher-bin
+> ```
+>
+> Lutris deckt GOG und einzelne Windows-Spiele ab, Heroic ist für Epic, GOG und Amazon.
+
+</details>
+
+<details>
+<summary><strong>Nützliches Beiwerk</strong></summary>
+
+> ```bash
+> sudo pacman -S gamemode lib32-gamemode mangohud lib32-mangohud
+> ```
+>
+> `gamemode` stellt den Rechner beim Spielen auf Leistung um, `mangohud` blendet FPS und Auslastung ein. In Steam trägst du das pro Spiel unter Startoptionen ein:
+>
+> ```
+> gamemoderun mangohud %command%
+> ```
+
+</details>
+
+> **Der eine Haken:** Spiele mit Kernel-AntiCheat laufen nicht, dazu gehören unter anderem Valorant, League of Legends und Fortnite. Das ist keine fehlende Einstellung, sondern eine Entscheidung der Hersteller, und daran wirst du nichts ändern. Wenn eins dieser Spiele für dich Pflicht ist, behalte Windows als Dualboot (siehe [Kapitel 6](#6-dualboot-mit-windows)). Ob deins betroffen ist, steht auf [areweanticheatyet.com](https://areweanticheatyet.com/).
+
+***
+
+### 9. Updates im Blick behalten
 
 Arch ist ein [Rolling Release](https://wiki.archlinux.org/title/Arch_Linux#Rolling_release). Es gibt also keinen großen Versionssprung einmal im Jahr, bei dem sich alles auf einmal ändert, sondern laufend kleine Updates. Das klingt erstmal nach mehr Arbeit, ist in der Praxis aber ein Befehl und ein paar Minuten warten.
 
