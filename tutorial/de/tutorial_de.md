@@ -121,7 +121,7 @@ Du bist jetzt im Livesystem und siehst eine schwarze Konsole. Keine Panik, das i
 > Deutsches Tastaturlayout, sonst suchst du dich beim Passwort dumm und dämlich:
 >
 > ```bash
-> loadkeys de-latin1
+> loadkeys de
 > ```
 >
 > Per Kabel bist du schon online. Für WLAN:
@@ -149,7 +149,7 @@ Du bist jetzt im Livesystem und siehst eine schwarze Konsole. Keine Panik, das i
 > | Menüpunkt              | Was du willst                                                    |
 > | ---------------------- | ---------------------------------------------------------------- |
 > | Disk configuration     | Die Platte, auf die Arch soll (siehe Warnung unten)              |
-> | Bootloader             | `grub`, wenn du Dualboot planst, sonst ist `systemd-boot` schlanker |
+> | Bootloader             | `systemd-boot` reicht völlig, für Dualboot kommt in [Kapitel 6](#6-dualboot-mit-windows) rEFInd oben drauf |
 > | Profile                | `Desktop` und darin `KDE Plasma`                                  |
 > | Audio                  | `pipewire`                                                        |
 > | Network configuration  | `Use NetworkManager`                                              |
@@ -273,24 +273,48 @@ Nur für dich, wenn Windows auf dem Rechner bleiben soll. Wenn du eh alles platt
 
 </details>
 
-<details>
-<summary><strong>Windows ins Bootmenü holen</strong></summary>
+#### rEFInd als Bootmenü
 
-> Wenn du bei archinstall `grub` genommen hast:
->
+Für Dualboot ist [rEFInd](https://www.rodsbooks.com/refind/) unsere klare Empfehlung. Der Unterschied zu GRUB: rEFInd schaut bei jedem Start selbst nach, was auf deinen Platten startbar ist, und findet Windows von allein. Du musst also keine Konfiguration schreiben und nach jedem Kernel-Update auch nichts neu bauen. Dazu sieht das Menü ohne Zutun schon anständig aus und lässt sich mit Designs umbauen.
+
+<details>
+<summary><strong>Einrichten</strong></summary>
+
 > ```bash
-> sudo pacman -S os-prober
+> sudo pacman -S refind
+> sudo refind-install
 > ```
 >
-> Dann in `/etc/default/grub` die Zeile `GRUB_DISABLE_OS_PROBER=false` eintragen oder das `#` davor entfernen. Die Sperre ist Absicht, ohne sie durchsucht GRUB fremde Platten. Danach:
+> Das war es im Normalfall wirklich. `refind-install` kopiert rEFInd auf die EFI-Partition und trägt es als Starteintrag ein. Beim nächsten Neustart bekommst du ein Menü mit Arch und Windows nebeneinander, ohne dass du eins von beidem eintragen musstest.
+>
+> Wenn dein Mainboard sich beim Starteintrag querstellt und rEFInd nicht kommt, hilft:
 >
 > ```bash
-> sudo grub-mkconfig -o /boot/grub/grub.cfg
+> sudo refind-install --usedefault /dev/sdXY
 > ```
 >
-> In der Ausgabe muss Windows auftauchen. Wenn nicht, ist die Windows-EFI-Partition gerade nicht eingehängt.
+> `sdXY` ist dabei deine EFI-Partition, die findest du mit `lsblk -f` (die kleine mit `vfat`, meist 300 bis 1000 MB).
+
+</details>
+
+<details>
+<summary><strong>Aufräumen und hübsch machen</strong></summary>
+
+> Die Konfiguration liegt in `/boot/EFI/refind/refind.conf` und ist gut kommentiert. Zwei Sachen, die man am Anfang meistens will:
 >
-> Alternativ kannst du GRUB weglassen und im BIOS-Bootmenü (meist F8, F11 oder F12) jedes Mal auswählen, was starten soll. Ist unbequemer, geht aber nie kaputt.
+> - `timeout 5` stellt ein, wie lange das Menü stehenbleibt
+> - `dont_scan_volumes` und `dont_scan_files` blenden Einträge aus, die du nicht brauchst. rEFInd findet nämlich gern auch Wiederherstellungspartitionen und ähnliches
+>
+> Designs gibt es einige fertige zum Reinkopieren, eingebunden werden sie mit einer `include`-Zeile in der `refind.conf`.
+
+</details>
+
+<details>
+<summary><strong>Wenn du lieber bei GRUB bleibst</strong></summary>
+
+> Geht auch, ist nur mehr Handarbeit. Du brauchst `os-prober`, musst in `/etc/default/grub` die Zeile `GRUB_DISABLE_OS_PROBER=false` setzen und danach `sudo grub-mkconfig -o /boot/grub/grub.cfg` laufen lassen. Taucht Windows in der Ausgabe nicht auf, ist gerade die Windows-EFI-Partition nicht eingehängt.
+>
+> Und wer gar kein Bootmenü will, wählt einfach bei jedem Start im BIOS-Bootmenü aus (meist F8, F11 oder F12). Unbequem, geht aber nie kaputt.
 
 </details>
 
@@ -339,15 +363,15 @@ Arch startet mit eingeschaltetem Secure Boot erstmal nicht, weil der Bootloader 
 >
 > Das `-m` ist bei Dualboot Pflicht. Es behält die Microsoft-Schlüssel, sonst startet Windows nicht mehr. Manche Mainboards und Grafikkarten brauchen sie auch für sich selbst, also lass es auch ohne Windows lieber drin.
 >
-> Dann signieren, was am Start beteiligt ist:
+> Dann signieren, was am Start beteiligt ist. Mit rEFInd sind das der Kernel und rEFInd selbst:
 >
 > ```bash
 > sudo sbctl sign -s /boot/vmlinuz-linux
-> sudo sbctl sign -s /boot/EFI/GRUB/grubx64.efi
+> sudo sbctl sign -s /boot/EFI/refind/refind_x64.efi
 > sudo sbctl verify
 > ```
 >
-> `sbctl verify` listet auf, was noch unsigniert ist. Der Pfad zur EFI-Datei hängt von deinem Bootloader ab, deshalb erst `verify` laufen lassen und dann die genannten Dateien signieren. Um Kernel-Updates musst du dich danach nicht kümmern, sbctl hängt sich in pacman ein und signiert automatisch nach. Zum Schluss Secure Boot im BIOS wieder an.
+> `sbctl verify` listet auf, was noch unsigniert ist. Lass es also erst laufen und signier dann genau das, was es dir nennt. Um Kernel-Updates musst du dich danach nicht kümmern, sbctl hängt sich in pacman ein und signiert automatisch nach. Zum Schluss Secure Boot im BIOS wieder an.
 >
 > Volle Anleitung im [Wiki](https://wiki.archlinux.org/title/Unified_Extensible_Firmware_Interface/Secure_Boot#sbctl).
 
