@@ -205,11 +205,11 @@ Von den vielen Punkten sind nur diese sieben wichtig, den Rest kannst du so lass
 >
 > ![Die Auswahl der Grafiktreiber](../img/08-grafiktreiber.png)
 >
-> Der Ton versteckt sich woanders, nämlich unter "Applications" → "Audio".
+> Der Ton versteckt sich woanders, nämlich unter "Applications" → "Audio". So muss es aussehen, bevor du mit Enter bestätigst:
 >
-> ![Die Audio-Auswahl, der Balken steht auf No audio server](../img/09-audio-pipewire.png)
+> ![Die Audio-Auswahl mit pipewire markiert](../img/09-audio-pipewire.png)
 >
-> **Genau so sieht es aus, wenn du das Menü öffnest, und genau so darfst du es nicht lassen.** Der Balken steht auf "No audio server", das ist die Voreinstellung. Geh eine Zeile runter auf `pipewire` und bestätige mit Enter. Wer hier nur draufschaut und weiterklickt, hat hinterher einen fertigen Desktop ohne Ton und sucht den Fehler dann bei den Lautsprechern.
+> **Pass hier auf:** Wenn du das Menü öffnest, steht der Balken eine Zeile höher auf "No audio server". Das ist die Voreinstellung. Du musst also aktiv einmal nach unten auf `pipewire` gehen. Wer nur draufschaut und weiterklickt, hat hinterher einen fertigen Desktop ohne Ton und sucht den Fehler dann bei den Lautsprechern.
 
 </details>
 
