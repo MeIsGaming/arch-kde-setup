@@ -1,3 +1,7 @@
+> **This repository has moved.**
+> It now lives at <https://git.purrr.chat/ashley/arch-kde-setup>.
+> This copy is archived and receives no further updates.
+
 # arch-kde-setup
 Einfache Anleitung zur Installation von Arch Linux mit KDE-Plasma
 
